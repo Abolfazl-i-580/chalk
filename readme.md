@@ -170,6 +170,109 @@ console.log(foregroundColorNames.includes('pink'));
 //=> false
 ```
 
+## Themes
+
+Chalk ships with a small theme system on top of the chainable API. A theme bundles a foreground color, a background color, an underline color, any number of modifiers (like `bold`), and optionally a gradient.
+
+Every registered theme is a property right on the main `chalk` object, so typing `chalk.` shows the theme names next to the styles:
+
+```js
+import chalk from 'chalk';
+
+console.log(chalk.sunset('Hello world!'));
+console.log(chalk.matrix('Wake up, Neo...'));
+```
+
+The same themes are also reachable with string arguments via `theme()` or the `chalk.theme` namespace, which return a reusable function when the text is omitted (`applyTheme()` is an alias):
+
+```js
+import {theme, applyTheme} from 'chalk';
+
+console.log(theme('sunset', 'Hello world!'));
+console.log(chalk.theme.ocean('Hello world!'));
+const paint = applyTheme('ocean');
+console.log(paint('Deep blue text'));
+```
+
+Define and apply a custom theme:
+
+```js
+import {theme, createTheme} from 'chalk';
+
+const brand = createTheme({
+	color: '#ff6b6b',    // Foreground
+	background: '#2d1b2e', // Background
+	bold: true,          // Any modifier
+	underlineStyle: 'curly',
+});
+console.log(theme(brand, 'Styled with a custom theme'));
+```
+
+Themes can also be plain objects, so inline definitions work too:
+
+```js
+console.log(theme({color: 'cyan', italic: true}, 'Italic cyan'));
+```
+
+### mix
+
+Blend two colors into a new one. This is handy to derive a color from a combination:
+
+```js
+import {mix} from 'chalk';
+
+console.log(mix('red', 'blue', 0.5));
+//=> '#800080'
+
+console.log(mix('#ff0000', '#00ff00', 0.25));
+//=> '#bf4000'
+```
+
+The `ratio` is how much of the second color to blend in, from `0` to `1`. Colors can be hex strings, named ANSI colors, `rgb()`/`hsl()` strings, or `[red, green, blue]` arrays.
+
+### applyGradient
+
+Gradient themes color each character with a color interpolated between two or more stops. The `gradient` option on a theme enables this:
+
+```js
+import {theme} from 'chalk';
+
+console.log(theme({gradient: ['#ff0080', '#7928ca'], bold: true}, 'Gradient text'));
+```
+
+Use `applyGradient()` directly with same styling options:
+
+```js
+import {applyGradient} from 'chalk';
+
+console.log(applyGradient('Gradient text', ['#f94144', '#f8961e', '#f9c74f']));
+```
+
+### registerTheme
+
+Add your own named theme so it can be reused by name. Registered themes become available on `chalk` (and `chalk.theme`) right away:
+
+```js
+import chalk, {registerTheme} from 'chalk';
+
+registerTheme('company-brand', {color: '#3b82f6', background: '#0b192c', bold: true});
+console.log(chalk['company-brand']('Branded text'));
+```
+
+### Built-in themes
+
+The following themes are available out of the box. Run `previewThemes()` to render every registered theme next to its name:
+
+```js
+import {previewThemes, themes} from 'chalk';
+
+console.log(previewThemes());
+console.log(themes.names);
+```
+
+- `success`, `warning`, `danger`, `info`
+- `sunset`, `ocean`, `forest`, `matrix`, `cyberpunk`, `midnight`, `mint`, `fire`, `ice`, `candy`, `lemon`, `lava`, `aurora`
+
 ## Styles
 
 ### Modifiers

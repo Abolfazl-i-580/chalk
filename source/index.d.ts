@@ -8,6 +8,7 @@ import {
 	ColorName,
 } from './vendor/ansi-styles/index.js';
 import {ColorInfo, ColorSupportLevel} from './vendor/supports-color/index.js';
+import {ThemeNamespace} from './theme.js';
 
 export interface Options {
 	/**
@@ -50,6 +51,17 @@ export interface ChalkInstance {
 	@throws If the assigned value is not an integer from 0 to 3.
 	*/
 	level: ColorSupportLevel;
+
+	/**
+	Apply a theme by name to text. Every registered theme is a property here, so the available themes show up when you type `chalk.theme.`.
+
+	```js
+	import chalk from 'chalk';
+
+	console.log(chalk.theme.sunset('Hello world!'));
+	```
+	*/
+	readonly theme: ThemeNamespace;
 
 	/**
 	Use RGB values to set text color.
@@ -337,13 +349,15 @@ export interface ChalkInstance {
 /**
 Main Chalk object that allows to chain styles together.
 
-Call the last one as a method with a string argument.
+Every registered theme name is also available directly here, so typing `chalk.` shows the theme names next to the styles:
 
-Order doesn't matter, and later styles take precedent in case of a conflict.
+```js
+import chalk from 'chalk';
 
-This simply means that `chalk.red.yellow.green` is equivalent to `chalk.green`.
+console.log(chalk.sunset('Hello world!'));
+```
 */
-declare const chalk: ChalkInstance;
+declare const chalk: ChalkInstance & ThemeNamespace;
 
 export const supportsColor: ColorInfo;
 
@@ -370,6 +384,25 @@ export {
 	ColorSupportLevel,
 // } from '#supports-color';
 } from './vendor/supports-color/index.js';
+
+export {
+	ThemeColor,
+	Theme,
+	ThemeStyler,
+	ThemeNamespace,
+	ThemeOptions,
+	theme,
+	applyTheme,
+	createTheme,
+	registerTheme,
+	unregisterTheme,
+	mix,
+	applyGradient,
+	previewThemes,
+	themes,
+	presetThemes,
+	themeNamespace,
+} from './theme.js';
 
 // TODO: Remove these aliases in the next major version
 /**

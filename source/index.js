@@ -1,3 +1,4 @@
+import {theme, themes, themeNamespace} from './theme.js';
 import {
 	stringReplaceAll,
 	stringEncaseCRLFWithFirstIndex,
@@ -234,10 +235,33 @@ const applyStyle = (self, string) => {
 
 // `level` lives on the prototype rather than on each instance, so it costs nothing to construct an instance and matches how builders already expose it. It is inherited rather than own, so it does not show up in `Object.keys()`, same as for a builder.
 // eslint-disable-next-line unicorn/no-top-level-side-effects -- The style getters must be installed at module load.
-Object.defineProperties(createChalk.prototype, {...styles, level: levelDescriptor});
+Object.defineProperties(createChalk.prototype, {
+	...styles,
+	level: levelDescriptor,
+	theme: {
+		get() {
+			return themeNamespace;
+		},
+	},
+});
 
 const chalk = createChalk();
-export const chalkStderr = createChalk({level: stderrColor ? stderrColor.level : 0});
+
+// Any registered theme is available directly on the instance as `chalk.themeName('text')`, alongside `chalk.theme.themeName`. The proxy only intercepts theme names so the hot path for styles is untouched.
+const createThemeProxy = instance => new Proxy(instance, {
+	get(target, name, receiver) {
+		if (typeof name === 'string' && themes.has(name)) {
+			return (...text) => theme(name, ...text);
+		}
+
+		return Reflect.get(target, name, receiver);
+	},
+	has(target, name) {
+		return (typeof name === 'string' && themes.has(name)) || Reflect.has(target, name);
+	},
+});
+
+export const chalkStderr = createThemeProxy(createChalk({level: stderrColor ? stderrColor.level : 0}));
 
 export {
 	modifierNames,
@@ -258,4 +282,18 @@ export {
 	stderrColor as supportsColorStderr,
 };
 
-export default chalk;
+export {
+	theme,
+	applyTheme,
+	createTheme,
+	registerTheme,
+	unregisterTheme,
+	mix,
+	applyGradient,
+	previewThemes,
+	themes,
+	presetThemes,
+	themeNamespace,
+} from './theme.js';
+
+export default createThemeProxy(chalk);
